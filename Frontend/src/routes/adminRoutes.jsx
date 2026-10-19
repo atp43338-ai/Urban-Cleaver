@@ -7,11 +7,12 @@ import AdminDashboardPage from '../features/admin/dashboard/pages/AdminDashboard
 import AdminUsersPage from '../features/admin/users/pages/AdminUsersPage';
 import AdminCategoriesPage from '../features/admin/categories/pages/AdminCategoriesPage';
 import AdminProductsPage from '../features/admin/products/pages/AdminProductsPage';
+import PantryManagementPage from '../features/admin/pages/PantryManagementPage';
 
 /**
  * Admin-Facing Routes
  * - /admin/login is wrapped in AuthLayout (clean brand header, zero footer, isolated light container)
- * - /admin/dashboard, /admin/users, /admin/categories, /admin/products nested inside AdminLayout (strictly NO FOOTER)
+ * - /admin/dashboard, /admin/users, /admin/categories, /admin/products, /admin/pantry nested inside AdminLayout (strictly NO FOOTER)
  */
 export const getAdminRoutes = () => [
   // 1. Dedicated Unauthenticated Admin Portal Login (Wrapped in AuthLayout)
@@ -26,6 +27,7 @@ export const getAdminRoutes = () => [
     <Route path="users" element={<AdminUsersPage />} />
     <Route path="categories" element={<AdminCategoriesPage />} />
     <Route path="products" element={<AdminProductsPage />} />
+    <Route path="pantry" element={<PantryManagementPage />} />
   </Route>,
 ];
 

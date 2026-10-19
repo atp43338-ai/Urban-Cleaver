@@ -1,5 +1,6 @@
 const express = require('express');
 const authRoutes = require('../features/auth/auth.routes');
+const { publicRouter: pantryPublicRoutes } = require('../features/pantry/routes/pantry.routes');
 
 const router = express.Router();
 
@@ -12,9 +13,8 @@ const router = express.Router();
 // Authentication & Account Verification (/api/auth)
 router.use('/auth', authRoutes);
 
-// Placeholder modules for future customer features (Products, Cart, Orders)
-// router.use('/products', productRoutes);
-// router.use('/cart', cartRoutes);
-// router.use('/orders', orderRoutes);
+// Public Storefront Pantry & Recipe Kits (/api/public/pantry, /api/pantry)
+router.use('/public/pantry', pantryPublicRoutes);
+router.use('/pantry', pantryPublicRoutes);
 
 module.exports = router;

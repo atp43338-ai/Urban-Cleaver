@@ -4,9 +4,9 @@ import catalogService from '../services/catalogService';
 import ProductGallery from '../components/pdp/ProductGallery';
 import CutSelectorSection from '../components/pdp/CutSelectorSection';
 import CutAnatomyCard from '../components/pdp/CutAnatomyCard';
+import RecipeKitSection from '../components/pdp/RecipeKitSection';
 import ServingsCalculator from '../components/pdp/ServingsCalculator';
 import NetWeightAssuranceCard from '../components/pdp/NetWeightAssuranceCard';
-import ChefPairingsSection from '../components/pdp/ChefPairingsSection';
 import FreshnessStamp from '../components/pdp/FreshnessStamp';
 import NetWeightModal from '../components/NetWeightModal';
 import ProductCard from '../components/ProductCard';
@@ -16,10 +16,11 @@ import {
   Minus,
   Plus,
   Scale,
-  ShieldCheck,
   Sparkles,
   ArrowLeft,
   Info,
+  PackageCheck,
+  Utensils,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -35,7 +36,9 @@ const ProductDetailsPage = () => {
   // User selections
   const [selectedCut, setSelectedCut] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [selectedKits, setSelectedKits] = useState([]); // Array of { item, quantity }
   const [isNetWeightModalOpen, setIsNetWeightModalOpen] = useState(false);
+  const [showBreakdownTooltip, setShowBreakdownTooltip] = useState(false);
 
   // Fetch product detail
   useEffect(() => {
@@ -94,19 +97,22 @@ const ProductDetailsPage = () => {
     );
   };
 
-  const handleAddWithPairings = ({ meatProduct, meatQuantity, selectedCut, addons, grandTotal }) => {
-    toast.success(
-      `Added ${meatQuantity}x ${meatProduct} (${selectedCut}) + ${addons.length} pairings to your bag! Total: ₹${grandTotal.toFixed(
-        2
-      )}`
-    );
-  };
-
   const handleAddToCart = () => {
     if (!product?.isStock) return;
-    toast.success(
-      `Added ${quantity}x ${product.name} (${selectedCut} - ${product.netWeight}) to your bag!`
-    );
+
+    if (selectedKits.length > 0) {
+      const kitNames = selectedKits
+        .map((k) => `${k.quantity > 1 ? `${k.quantity}x ` : ''}${k.item.name}`)
+        .join(', ');
+
+      toast.success(
+        `Added ${quantity}x ${product.name} (${selectedCut}) + ${selectedKits.length} Recipe Kits (${kitNames}) to your bag! (Total: ₹${grandTotal.toFixed(2)})`
+      );
+    } else {
+      toast.success(
+        `Added ${quantity}x ${product.name} (${selectedCut} - ${product.netWeight}) to your bag!`
+      );
+    }
   };
 
   // Loading skeleton
@@ -164,10 +170,16 @@ const ProductDetailsPage = () => {
     ? 500
     : 1000;
 
-  const totalPrice = (Number(product.price || 0) * quantity).toFixed(2);
+  // Pricing calculations
+  const meatTotal = Number(product.price || 0) * quantity;
+  const kitsTotal = selectedKits.reduce(
+    (sum, entry) => sum + Number(entry.item.price || 0) * entry.quantity,
+    0
+  );
+  const grandTotal = meatTotal + kitsTotal;
 
   return (
-    <div className="bg-white text-zinc-900 min-h-screen pb-20">
+    <div className="bg-white text-zinc-900 min-h-screen pb-28">
       {/* Breadcrumb Navigation */}
       <div className="border-b border-zinc-100 bg-zinc-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
@@ -274,7 +286,14 @@ const ProductDetailsPage = () => {
             {/* 2. Culinary Cut Breakdown & Anatomy (The Butcher's Guide) */}
             <CutAnatomyCard selectedCut={selectedCut} />
 
-            {/* 3. Interactive Servings & Quantity Estimator */}
+            {/* 3. The Chef's Recipe Kit (Pre-Portioned for 1kg Meat - Dynamic Public Pantry) */}
+            <RecipeKitSection
+              selectedCut={selectedCut}
+              productName={product.name}
+              onSelectedKitsChange={setSelectedKits}
+            />
+
+            {/* 4. Interactive Servings & Quantity Estimator */}
             <ServingsCalculator
               recipeName={selectedCut || product.name}
               packWeightGrams={packWeightGrams}
@@ -282,21 +301,12 @@ const ProductDetailsPage = () => {
               onApplyCalculatedQuantity={handleApplyCalculatedQuantity}
             />
 
-            {/* 4. Chef's Pairing & Spice Kit (1-Click Add-on Drawer) */}
-            <ChefPairingsSection
-              meatProductName={product.name}
-              meatPrice={Number(product.price || 0)}
-              meatQuantity={quantity}
-              selectedCut={selectedCut}
-              onAddWithPairings={handleAddWithPairings}
-            />
-
-            {/* 5. Primary Quantity & Direct Add to Bag CTA */}
+            {/* 5. Primary Quantity & Direct Add to Bag CTA Box */}
             <div className="p-5 bg-white border-2 border-black rounded-2xl space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider">
-                    Pack Quantity
+                    Meat Pack Quantity
                   </span>
                   <span className="text-xs font-bold text-black">
                     {quantity} {quantity === 1 ? 'Pack' : 'Packs'} ({quantity * (packWeightGrams / 1000)} kg Net Usable)
@@ -329,7 +339,69 @@ const ProductDetailsPage = () => {
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Live Tally Breakdown Bar */}
+              <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl relative">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-zinc-600">
+                    <span className="font-semibold text-black">
+                      {quantity}x {selectedCut || product.name}
+                    </span>
+                    <span className="font-mono text-zinc-400">
+                      (₹{meatTotal.toFixed(2)})
+                    </span>
+                    {selectedKits.length > 0 && (
+                      <>
+                        <span className="text-zinc-400">+</span>
+                        <span className="font-semibold text-black">
+                          {selectedKits.length} Recipe {selectedKits.length === 1 ? 'Kit' : 'Kits'}
+                        </span>
+                        <span className="font-mono text-zinc-400">
+                          (₹{kitsTotal.toFixed(2)})
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onMouseEnter={() => setShowBreakdownTooltip(true)}
+                    onMouseLeave={() => setShowBreakdownTooltip(false)}
+                    className="text-zinc-400 hover:text-black transition p-0.5 cursor-pointer"
+                    title="View itemized breakdown"
+                  >
+                    <Info size={13} />
+                  </button>
+                </div>
+
+                {/* Tooltip Breakdown */}
+                {showBreakdownTooltip && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-black text-white text-[11px] rounded-xl shadow-xl z-30 pointer-events-none space-y-1">
+                    <div className="font-bold border-b border-zinc-700 pb-1 mb-1">
+                      Order Summary Breakdown:
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{quantity}x {product.name} ({selectedCut}):</span>
+                      <span className="font-mono font-bold">₹{meatTotal.toFixed(2)}</span>
+                    </div>
+                    {selectedKits.map((k) => (
+                      <div key={k.item._id} className="flex justify-between text-zinc-300">
+                        <span className="truncate pr-2">
+                          {k.quantity}x {k.item.name}:
+                        </span>
+                        <span className="font-mono">
+                          ₹{(Number(k.item.price) * k.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="border-t border-zinc-700 pt-1 mt-1 flex justify-between font-bold text-white">
+                      <span>Total Net Price:</span>
+                      <span className="font-mono">₹{grandTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Primary Action Button */}
               <button
                 type="button"
                 onClick={handleAddToCart}
@@ -343,13 +415,17 @@ const ProductDetailsPage = () => {
                 <div className="flex items-center gap-2">
                   <ShoppingBag size={15} />
                   <span>
-                    {product.isStock
-                      ? `Add ${quantity}x ${selectedCut} to Bag`
-                      : 'Currently Out of Stock'}
+                    {!product.isStock
+                      ? 'Currently Out of Stock'
+                      : selectedKits.length > 0
+                      ? `Add Cut + ${selectedKits.length} Recipe Kits to Bag`
+                      : `Add ${quantity}x ${selectedCut} to Bag`}
                   </span>
                 </div>
                 {product.isStock && (
-                  <span className="font-mono text-xs font-black">₹{totalPrice}</span>
+                  <span className="font-mono text-xs font-black">
+                    ₹{grandTotal.toFixed(2)}
+                  </span>
                 )}
               </button>
             </div>
@@ -381,6 +457,41 @@ const ProductDetailsPage = () => {
           </div>
         )}
       </div>
+
+      {/* ================= BOTTOM STICKY ACTION BAR ================= */}
+      {product?.isStock && (
+        <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-zinc-200 py-3 px-4 sm:px-8 z-40 shadow-lg">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="hidden sm:flex w-9 h-9 rounded-lg bg-black text-white items-center justify-center shrink-0">
+                <Utensils size={16} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-black truncate block">
+                  {quantity}x {product.name} ({selectedCut})
+                  {selectedKits.length > 0 && ` + ${selectedKits.length} Recipe Kits`}
+                </span>
+                <span className="text-[11px] text-zinc-500 font-mono block">
+                  100% Pan-Ready Net Weight &bull; Total: ₹{grandTotal.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className="px-6 py-2.5 bg-black hover:bg-zinc-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] shrink-0"
+            >
+              <ShoppingBag size={14} />
+              <span>
+                {selectedKits.length > 0
+                  ? `Add All (${1 + selectedKits.length} Items) — ₹${grandTotal.toFixed(2)}`
+                  : `Add to Bag — ₹${grandTotal.toFixed(2)}`}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 100% Net Weight Standard Modal */}
       <NetWeightModal

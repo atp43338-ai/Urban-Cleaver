@@ -6,6 +6,7 @@ import {
   Users,
   FolderTree,
   Package,
+  UtensilsCrossed,
   Flame,
   LogOut,
   ExternalLink,
@@ -82,6 +83,12 @@ const AdminSidebar = () => {
         <NavLink to="/admin/categories" className={navLinkClasses}>
           <FolderTree size={16} className="stroke-1.5" />
           <span>Categories & Depts</span>
+        </NavLink>
+
+        {/* Pantry & Recipe Kits Link */}
+        <NavLink to="/admin/pantry" className={navLinkClasses}>
+          <UtensilsCrossed size={16} className="stroke-1.5" />
+          <span>Pantry & Kits</span>
         </NavLink>
 
         <div className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 font-mono">

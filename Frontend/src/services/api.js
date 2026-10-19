@@ -21,6 +21,11 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // When sending FormData, let browser/axios generate multipart boundary automatically
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const fullUrl = `${config.baseURL || ''}${config.url || ''}`;
     console.log(`[API Request] ${config.method?.toUpperCase()} ${fullUrl}`);
     return config;

@@ -5,11 +5,13 @@ import AuthLayout from '../layouts/AuthLayout';
 import AdminLoginPage from '../features/admin/auth/pages/AdminLoginPage';
 import AdminDashboardPage from '../features/admin/dashboard/pages/AdminDashboardPage';
 import AdminUsersPage from '../features/admin/users/pages/AdminUsersPage';
+import AdminCategoriesPage from '../features/admin/categories/pages/AdminCategoriesPage';
+import AdminProductsPage from '../features/admin/products/pages/AdminProductsPage';
 
 /**
  * Admin-Facing Routes
  * - /admin/login is wrapped in AuthLayout (clean brand header, zero footer, isolated light container)
- * - /admin/dashboard & /admin/users nested inside AdminLayout (Sidebar + Header + Outlet; strictly NO FOOTER)
+ * - /admin/dashboard, /admin/users, /admin/categories, /admin/products nested inside AdminLayout (strictly NO FOOTER)
  */
 export const getAdminRoutes = () => [
   // 1. Dedicated Unauthenticated Admin Portal Login (Wrapped in AuthLayout)
@@ -22,6 +24,8 @@ export const getAdminRoutes = () => [
     <Route index element={<Navigate to="/admin/dashboard" replace />} />
     <Route path="dashboard" element={<AdminDashboardPage />} />
     <Route path="users" element={<AdminUsersPage />} />
+    <Route path="categories" element={<AdminCategoriesPage />} />
+    <Route path="products" element={<AdminProductsPage />} />
   </Route>,
 ];
 

@@ -6,8 +6,8 @@ const AdminUsersPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Customer Directory & Security</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h2 className="text-xl font-bold text-black tracking-tight">Customer Directory & Security</h2>
+          <p className="text-xs text-zinc-500 mt-0.5">
             Manage registered customer accounts, view verification states, and suspend unauthorized activity.
           </p>
         </div>

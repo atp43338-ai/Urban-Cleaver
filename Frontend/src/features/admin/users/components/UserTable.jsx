@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import userManagementService from '../services/userManagementService';
 import {
-  Users,
   Search,
   RefreshCw,
   ShieldCheck,
-  ShieldAlert,
   UserX,
   UserCheck,
   Filter,
@@ -99,28 +97,28 @@ const UserTable = () => {
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-zinc-200 flex flex-col md:flex-row gap-4 items-center justify-between">
         {/* Search */}
         <div className="relative w-full md:w-80">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
             placeholder="Search by name, email, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition text-slate-800"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:border-black focus:bg-white transition text-zinc-900 placeholder:text-zinc-400"
           />
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Filter size={14} />
-            <span>Role:</span>
+          <div className="flex items-center gap-1.5 text-xs text-zinc-600">
+            <Filter size={13} className="text-zinc-500" />
+            <span className="font-medium">Role:</span>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs rounded-xl px-2.5 py-1.5 text-slate-700 focus:outline-none focus:border-orange-500"
+              className="bg-zinc-50 border border-zinc-200 text-xs rounded-lg px-2.5 py-1.5 text-zinc-800 focus:outline-none focus:border-black cursor-pointer"
             >
               <option value="all">All Roles</option>
               <option value="user">Customers (user)</option>
@@ -128,12 +126,12 @@ const UserTable = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <span>Status:</span>
+          <div className="flex items-center gap-1.5 text-xs text-zinc-600">
+            <span className="font-medium">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs rounded-xl px-2.5 py-1.5 text-slate-700 focus:outline-none focus:border-orange-500"
+              className="bg-zinc-50 border border-zinc-200 text-xs rounded-lg px-2.5 py-1.5 text-zinc-800 focus:outline-none focus:border-black cursor-pointer"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active & Verified</option>
@@ -146,19 +144,19 @@ const UserTable = () => {
             type="button"
             onClick={fetchUsers}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 bg-black hover:bg-zinc-800 text-white rounded-lg transition disabled:opacity-50 cursor-pointer"
           >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-zinc-50 text-zinc-500 font-semibold border-b border-zinc-200 uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="px-5 py-3.5">Customer Profile</th>
                 <th className="px-5 py-3.5">Contact Details</th>
@@ -169,35 +167,35 @@ const UserTable = () => {
                 <th className="px-5 py-3.5 text-right">Moderation Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-zinc-100 text-zinc-700">
               {users.length > 0 ? (
                 users.map((item) => {
                   const id = item._id || item.id;
                   const isActionLoading = actionLoadingId === id;
 
                   return (
-                    <tr key={id} className="hover:bg-slate-50/60 transition">
+                    <tr key={id} className="hover:bg-zinc-50/60 transition">
                       {/* Name & Avatar */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center uppercase">
+                          <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-800 font-bold flex items-center justify-center uppercase text-xs">
                             {item.name ? item.name.charAt(0) : 'U'}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900">{item.name}</p>
-                            <p className="text-[10px] text-slate-400 font-mono">ID: {id.slice(-8)}</p>
+                            <p className="font-semibold text-black">{item.name}</p>
+                            <p className="text-[10px] text-zinc-400 font-mono">ID: {id.slice(-8)}</p>
                           </div>
                         </div>
                       </td>
 
                       {/* Contact */}
                       <td className="px-5 py-4 space-y-1">
-                        <div className="flex items-center gap-1.5 text-slate-600">
-                          <Mail size={12} className="text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-zinc-600">
+                          <Mail size={12} className="text-zinc-400 shrink-0" />
                           <span>{item.email}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-slate-500 font-mono text-[11px]">
-                          <Phone size={12} className="text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-zinc-500 font-mono text-[11px]">
+                          <Phone size={12} className="text-zinc-400 shrink-0" />
                           <span>{item.phone}</span>
                         </div>
                       </td>
@@ -205,10 +203,10 @@ const UserTable = () => {
                       {/* Role */}
                       <td className="px-5 py-4">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
                             item.role === 'admin'
-                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              ? 'bg-black text-white'
+                              : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
                           }`}
                         >
                           {item.role}
@@ -218,12 +216,12 @@ const UserTable = () => {
                       {/* Verification Status */}
                       <td className="px-5 py-4">
                         {item.isVerified ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
-                            <ShieldCheck size={13} className="text-emerald-500" />
+                          <span className="inline-flex items-center gap-1 text-zinc-900 bg-zinc-100 border border-zinc-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
+                            <ShieldCheck size={12} className="text-zinc-800" />
                             Verified
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
+                          <span className="inline-flex items-center gap-1 text-zinc-500 bg-zinc-50 border border-zinc-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
                             Pending OTP
                           </span>
                         )}
@@ -232,20 +230,20 @@ const UserTable = () => {
                       {/* Blocked / Active Status */}
                       <td className="px-5 py-4">
                         {item.isBlocked ? (
-                          <span className="inline-flex items-center gap-1 text-red-700 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 text-black bg-zinc-200 border border-zinc-300 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
                             <UserX size={12} /> Suspended
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
-                            <UserCheck size={12} className="text-emerald-500" /> Active
+                          <span className="inline-flex items-center gap-1 text-zinc-900 bg-zinc-100 border border-zinc-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
+                            <UserCheck size={12} className="text-zinc-800" /> Active
                           </span>
                         )}
                       </td>
 
                       {/* Joined Date */}
-                      <td className="px-5 py-4 text-slate-500 text-[11px]">
+                      <td className="px-5 py-4 text-zinc-500 text-[11px]">
                         <div className="flex items-center gap-1">
-                          <Calendar size={12} className="text-slate-400" />
+                          <Calendar size={12} className="text-zinc-400" />
                           <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                         </div>
                       </td>
@@ -263,21 +261,21 @@ const UserTable = () => {
                               ? 'Restore account access'
                               : 'Suspend account'
                           }
-                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed ${
+                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
                             item.isBlocked
-                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
-                              : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                              ? 'bg-black hover:bg-zinc-800 text-white'
+                              : 'bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 hover:border-zinc-300'
                           }`}
                         >
                           {isActionLoading ? (
                             <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                           ) : item.isBlocked ? (
                             <>
-                              <UserCheck size={13} /> Unblock
+                              <UserCheck size={12} /> Unblock
                             </>
                           ) : (
                             <>
-                              <UserX size={13} /> Block
+                              <UserX size={12} /> Block
                             </>
                           )}
                         </button>
@@ -287,7 +285,7 @@ const UserTable = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
+                  <td colSpan={7} className="text-center py-12 text-zinc-400">
                     {loading ? 'Loading user directory...' : 'No accounts matching criteria'}
                   </td>
                 </tr>
@@ -297,10 +295,10 @@ const UserTable = () => {
         </div>
 
         {/* Pagination Bar */}
-        <div className="p-4 bg-slate-50/60 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="p-4 bg-zinc-50 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-600">
           <div>
-            Showing <strong className="text-slate-800">{users.length}</strong> of{' '}
-            <strong className="text-slate-800">{pagination.totalUsers}</strong> total registered accounts
+            Showing <strong className="text-black">{users.length}</strong> of{' '}
+            <strong className="text-black">{pagination.totalUsers}</strong> total registered accounts
           </div>
 
           <div className="flex items-center gap-2">
@@ -308,12 +306,12 @@ const UserTable = () => {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={!pagination.hasPrevPage || loading}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-slate-700 transition"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-zinc-800 transition cursor-pointer"
             >
               <ChevronLeft size={14} /> Previous
             </button>
 
-            <span className="px-3 py-1 bg-white border border-slate-200 rounded-lg font-bold text-slate-800">
+            <span className="px-3 py-1 bg-white border border-zinc-200 rounded-lg font-bold text-black">
               Page {pagination.page} of {pagination.totalPages}
             </span>
 
@@ -321,7 +319,7 @@ const UserTable = () => {
               type="button"
               onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
               disabled={!pagination.hasNextPage || loading}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-slate-700 transition"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-zinc-800 transition cursor-pointer"
             >
               Next <ChevronRight size={14} />
             </button>

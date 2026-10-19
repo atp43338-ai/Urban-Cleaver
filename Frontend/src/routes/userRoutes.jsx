@@ -2,7 +2,7 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 import UserLayout from '../layouts/UserLayout';
 import AuthLayout from '../layouts/AuthLayout';
-import HomePage from '../pages/HomePage';
+import HomePage from '../features/catalog/pages/HomePage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import OtpVerifyPage from '../features/auth/pages/OtpVerifyPage';

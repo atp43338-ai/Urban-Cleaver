@@ -107,13 +107,19 @@ class ProductService {
     search,
     category,
     stockStatus,
+    cutType,
+    recipe,
     page = 1,
     limit = 10,
   } = {}) {
     const query = {};
 
     if (search && search.trim()) {
-      query.name = { $regex: search.trim(), $options: 'i' };
+      query.$or = [
+        { name: { $regex: search.trim(), $options: 'i' } },
+        { description: { $regex: search.trim(), $options: 'i' } },
+        { cutTypes: { $regex: search.trim(), $options: 'i' } },
+      ];
     }
 
     if (category && category !== 'all') {
@@ -124,6 +130,55 @@ class ProductService {
       query.isStock = true;
     } else if (stockStatus === 'outOfStock') {
       query.isStock = false;
+    }
+
+    const filterRecipe = recipe || cutType;
+    if (filterRecipe && filterRecipe !== 'all') {
+      const lower = filterRecipe.toLowerCase().trim();
+      let recipeCondition;
+
+      if (lower.includes('biryani')) {
+        recipeCondition = {
+          $or: [
+            { cutTypes: { $regex: /biryani/i } },
+            { name: { $regex: /biryani/i } },
+            { description: { $regex: /biryani/i } },
+          ],
+        };
+      } else if (lower.includes('curry') || lower.includes('slow')) {
+        recipeCondition = {
+          $or: [
+            { cutTypes: { $regex: /curry|soup/i } },
+            { name: { $regex: /curry|rogan|stew/i } },
+            { description: { $regex: /curry|slow/i } },
+          ],
+        };
+      } else if (lower.includes('fry') || lower.includes('roast') || lower.includes('pan')) {
+        recipeCondition = {
+          $or: [
+            { cutTypes: { $regex: /boneless|steak|roast|chop/i } },
+            { name: { $regex: /fry|roast|steak|fillet|breast/i } },
+            { description: { $regex: /fry|roast|steak|sear/i } },
+          ],
+        };
+      } else if (lower.includes('diet') || lower.includes('protein')) {
+        recipeCondition = {
+          $or: [
+            { cutTypes: { $regex: /boneless|keema/i } },
+            { name: { $regex: /breast|fillet|salmon|lean/i } },
+            { description: { $regex: /protein|lean|keto/i } },
+          ],
+        };
+      } else {
+        recipeCondition = { cutTypes: { $regex: new RegExp(filterRecipe.trim(), 'i') } };
+      }
+
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, recipeCondition];
+        delete query.$or;
+      } else {
+        Object.assign(query, recipeCondition);
+      }
     }
 
     const parsedPage = Math.max(1, parseInt(page, 10) || 1);

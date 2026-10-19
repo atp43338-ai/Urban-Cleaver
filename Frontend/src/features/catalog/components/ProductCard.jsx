@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, Info, Check, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getFullImageUrl } from '../../../utils/imageUrl';
@@ -14,6 +15,8 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
     ? getFullImageUrl(product.images[0])
     : null;
 
+  const productId = product?._id || product?.id;
+
   const handleAddToCart = () => {
     if (!product?.isStock) return;
     toast.success(
@@ -25,7 +28,10 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
     <div className="bg-white border border-zinc-200 hover:border-black transition-all duration-200 p-4 rounded-xl flex flex-col justify-between group shadow-2xs">
       <div>
         {/* Thumbnail Box */}
-        <div className="relative w-full aspect-4/3 rounded-lg bg-zinc-100 border border-zinc-100 overflow-hidden mb-3.5 flex items-center justify-center">
+        <Link
+          to={`/product/${productId}`}
+          className="block relative w-full aspect-4/3 rounded-lg bg-zinc-100 border border-zinc-100 overflow-hidden mb-3.5 flex items-center justify-center cursor-pointer"
+        >
           {imageSrc ? (
             <img
               src={imageSrc}
@@ -53,7 +59,7 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
               </span>
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Category Label */}
         <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
@@ -61,9 +67,11 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
         </p>
 
         {/* Product Title */}
-        <h3 className="text-base font-bold text-black tracking-tight mt-0.5 leading-snug">
-          {product.name}
-        </h3>
+        <Link to={`/product/${productId}`}>
+          <h3 className="text-base font-bold text-black tracking-tight mt-0.5 leading-snug hover:underline cursor-pointer">
+            {product.name}
+          </h3>
+        </Link>
 
         {/* Description snippet */}
         {product.description && (

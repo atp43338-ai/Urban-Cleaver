@@ -2,8 +2,8 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 import UserLayout from '../layouts/UserLayout';
 import AuthLayout from '../layouts/AuthLayout';
-import HomePage from '../features/catalog/pages/HomePage';
-import ProductDetailsPage from '../features/catalog/pages/ProductDetailsPage';
+import Home from '../features/home/pages/Home';
+import ProductDetailsPage from '../features/product/pages/ProductDetailsPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import OtpVerifyPage from '../features/auth/pages/OtpVerifyPage';
@@ -17,7 +17,7 @@ import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
 export const getUserRoutes = () => [
   // 1. Storefront Routes (Navbar + Outlet + Footer)
   <Route key="customer-store" element={<UserLayout />}>
-    <Route path="/" element={<HomePage />} />
+    <Route path="/" element={<Home />} />
     <Route path="/product/:id" element={<ProductDetailsPage />} />
   </Route>,
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, Plus, Minus, Package, Image as ImageIcon } from 'lucide-react';
-import { getFullImageUrl } from '../../../../utils/imageUrl';
+import { getFullImageUrl } from '@/utils/imageUrl';
 
 /**
  * RecipeKitCard:

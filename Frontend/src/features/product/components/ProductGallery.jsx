@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image as ImageIcon, Sparkles, Check, ZoomIn } from 'lucide-react';
-import { getFullImageUrl } from '../../../../utils/imageUrl';
+import { getFullImageUrl } from '@/utils/imageUrl';
 
 /**
  * ProductGallery:

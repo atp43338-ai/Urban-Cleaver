@@ -1,6 +1,10 @@
 import api from '../../../services/api';
 
-const catalogService = {
+/**
+ * Service for fetching products and categories from storefront API
+ * Backed by /api/public/categories and /api/public/products
+ */
+const productService = {
   /**
    * Fetch active categories for storefront filters
    */
@@ -18,7 +22,7 @@ const catalogService = {
   },
 
   /**
-   * Fetch single product detail
+   * Fetch single product detail by ID
    */
   async getProductById(id) {
     const response = await api.get(`/public/products/${id}`);
@@ -26,4 +30,4 @@ const catalogService = {
   },
 };
 
-export default catalogService;
+export default productService;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import pantryService from '../../services/pantryService';
+import pantryService from '../services/pantryService';
 import RecipeKitCard from './RecipeKitCard';
 import { Sparkles, Utensils, Check, RotateCcw } from 'lucide-react';
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import catalogService from '../services/catalogService';
-import ProductGallery from '../components/pdp/ProductGallery';
-import CutSelectorSection from '../components/pdp/CutSelectorSection';
-import CutAnatomyCard from '../components/pdp/CutAnatomyCard';
-import RecipeKitSection from '../components/pdp/RecipeKitSection';
-import ServingsCalculator from '../components/pdp/ServingsCalculator';
-import NetWeightAssuranceCard from '../components/pdp/NetWeightAssuranceCard';
-import FreshnessStamp from '../components/pdp/FreshnessStamp';
+import productService from '../services/productService';
+import ProductGallery from '../components/ProductGallery';
+import CutSelectorSection from '../components/CutSelectorSection';
+import CutAnatomyCard from '../components/CutAnatomyCard';
+import RecipeKitSection from '../components/RecipeKitSection';
+import ServingsCalculator from '../components/ServingsCalculator';
+import NetWeightAssuranceCard from '../components/NetWeightAssuranceCard';
+import FreshnessStamp from '../components/FreshnessStamp';
 import NetWeightModal from '../components/NetWeightModal';
 import ProductCard from '../components/ProductCard';
 import {
@@ -49,7 +49,7 @@ const ProductDetailsPage = () => {
         setError(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        const res = await catalogService.getProductById(id);
+        const res = await productService.getProductById(id);
         if (isMounted && res.product) {
           setProduct(res.product);
 
@@ -61,7 +61,7 @@ const ProductDetailsPage = () => {
 
           // Fetch related cuts in same category
           if (res.product.category?._id) {
-            const relRes = await catalogService.getProducts({
+            const relRes = await productService.getProducts({
               category: res.product.category._id,
               limit: 4,
             });

@@ -1,7 +1,7 @@
 import React from 'react';
-import { UtensilsCrossed, Sparkles } from 'lucide-react';
+import { UtensilsCrossed } from 'lucide-react';
 
-const RECIPE_TABS = [
+export const RECIPE_PURPOSE_TABS = [
   { id: 'all', label: 'All Cuts', sublabel: 'Full inventory' },
   { id: 'biryani', label: 'Biryani Special', sublabel: 'Dum & Bone-in' },
   { id: 'curry', label: 'Curry & Slow Cook', sublabel: 'Rich gravies' },
@@ -10,21 +10,22 @@ const RECIPE_TABS = [
 ];
 
 /**
- * RecipeFilterBar:
- * Horizontal minimal pill tabs directly above product catalog
- * Allows customers to shop by culinary purpose / recipe intention
+ * RecipeFilterSection:
+ * Horizontal dish/purpose filter tabs:
+ * ['All Cuts', 'Biryani Special', 'Curry & Slow Cook', 'Pan Fry & Roast', 'Diet & High-Protein']
+ * Receives activeRecipe and onSelectRecipe as props.
  */
-const RecipeFilterBar = ({
-  selectedRecipe = 'all',
+const RecipeFilterSection = ({
+  activeRecipe = 'all',
   onSelectRecipe,
   totalCount,
 }) => {
   return (
-    <div className="space-y-2 py-2">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold text-zinc-600 uppercase tracking-wider">
           <UtensilsCrossed size={14} className="text-black" />
-          <span>Shop by Recipe & Purpose</span>
+          <span>Shop by Recipe &amp; Purpose</span>
         </div>
         {totalCount !== undefined && (
           <span className="text-[11px] font-mono text-zinc-400">
@@ -34,13 +35,13 @@ const RecipeFilterBar = ({
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none select-none">
-        {RECIPE_TABS.map((tab) => {
-          const isActive = selectedRecipe === tab.id;
+        {RECIPE_PURPOSE_TABS.map((tab) => {
+          const isActive = activeRecipe === tab.id;
           return (
             <button
               key={tab.id}
               type="button"
-              onClick={() => onSelectRecipe(tab.id)}
+              onClick={() => onSelectRecipe && onSelectRecipe(tab.id)}
               className={`group flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs transition cursor-pointer shrink-0 ${
                 isActive
                   ? 'bg-black text-white shadow-xs font-semibold'
@@ -65,4 +66,4 @@ const RecipeFilterBar = ({
   );
 };
 
-export default RecipeFilterBar;
+export default RecipeFilterSection;

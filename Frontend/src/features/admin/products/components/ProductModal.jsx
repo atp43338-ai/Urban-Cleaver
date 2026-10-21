@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2, Plus, Tag } from 'lucide-react';
+import { X, Check, Loader2, Plus, Tag, Scissors } from 'lucide-react';
 import ImageUploadField from '../../shared/ImageUploadField';
 
-const COMMON_CUT_TYPES = [
-  'Curry Cut',
-  'Biryani Cut',
-  'Boneless',
-  'Keema',
-  'Chops',
-  'Steaks',
-  'Whole / Roast',
-  'Ribs',
-  'Soup Bones',
+const DEFAULT_CUT_TYPES = [
+  'Beef Keema',
+  'Mutton keema',
+  'Beef cube',
+  'Beef kurma',
+  'Biriyani cutting',
+  'Saloona cutting',
+  'Finger cutting (French fries)',
+  'Beef pasantha',
+  'Burger',
+  'Kebab cutting',
 ];
 
 const ProductModal = ({
@@ -20,6 +21,8 @@ const ProductModal = ({
   onSubmit,
   product = null,
   categories = [],
+  cuts = [],
+  onOpenAddCutModal = null,
   isSubmitting = false,
 }) => {
   const [formData, setFormData] = useState({
@@ -35,6 +38,10 @@ const ProductModal = ({
   const [images, setImages] = useState([]);
   const [customCut, setCustomCut] = useState('');
   const [error, setError] = useState('');
+
+  const availableCuts = Array.isArray(cuts) && cuts.length > 0
+    ? cuts.map((c) => (typeof c === 'string' ? c : c.name))
+    : DEFAULT_CUT_TYPES;
 
   useEffect(() => {
     if (product) {
@@ -68,8 +75,8 @@ const ProductModal = ({
         description: '',
         price: '',
         grossWeight: '1000g',
-        netWeight: '750g - 800g',
-        cutTypes: ['Curry Cut', 'Biryani Cut'],
+        netWeight: '1000g Net Usable',
+        cutTypes: availableCuts.slice(0, 2),
         isStock: true,
       });
       setImages([]);
@@ -271,56 +278,26 @@ const ProductModal = ({
             </div>
           </div>
 
-          {/* Row 2: Gross & Net Weight Breakdown */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label
-                className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5"
-                htmlFor="prod-gross"
-              >
-                Gross Weight <span className="text-black">*</span>
-              </label>
-              <input
-                id="prod-gross"
-                type="text"
-                name="grossWeight"
-                value={formData.grossWeight}
-                onChange={handleChange}
-                placeholder="e.g. 1000g or 1kg"
-                disabled={isSubmitting}
-                className="w-full h-10 px-3 text-sm bg-white border border-zinc-300 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition font-mono"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5"
-                htmlFor="prod-net"
-              >
-                Net Usable Weight <span className="text-black">*</span>
-              </label>
-              <input
-                id="prod-net"
-                type="text"
-                name="netWeight"
-                value={formData.netWeight}
-                onChange={handleChange}
-                placeholder="e.g. 750g - 800g"
-                disabled={isSubmitting}
-                className="w-full h-10 px-3 text-sm bg-white border border-zinc-300 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition font-mono"
-                required
-              />
-            </div>
-          </div>
 
           {/* Row 3: Cut Types Selector */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-              Available Cut Options <span className="text-black">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Available Cut Options <span className="text-black">*</span>
+              </label>
+              {onOpenAddCutModal && (
+                <button
+                  type="button"
+                  onClick={onOpenAddCutModal}
+                  className="text-[11px] font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Scissors size={12} />
+                  <span>+ Define New Cut</span>
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {COMMON_CUT_TYPES.map((cut) => {
+              {availableCuts.map((cut) => {
                 const selected = formData.cutTypes.includes(cut);
                 return (
                   <button
@@ -347,7 +324,7 @@ const ProductModal = ({
                 type="text"
                 value={customCut}
                 onChange={(e) => setCustomCut(e.target.value)}
-                placeholder="Add custom cut (e.g. Mince/Keema)..."
+                placeholder="Quick custom cut..."
                 className="h-8 px-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition flex-1 max-w-xs"
               />
               <button
@@ -355,7 +332,7 @@ const ProductModal = ({
                 onClick={handleAddCustomCut}
                 className="h-8 px-3 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg transition flex items-center gap-1 cursor-pointer"
               >
-                <Plus size={12} /> Add Cut
+                <Plus size={12} /> Add
               </button>
             </div>
           </div>

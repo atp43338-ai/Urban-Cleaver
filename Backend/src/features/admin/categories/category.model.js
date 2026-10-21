@@ -10,6 +10,11 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, 'Category name must be at least 2 characters long'],
       maxlength: [60, 'Category name cannot exceed 60 characters'],
     },
+    slug: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
     description: {
       type: String,
       trim: true,
@@ -30,6 +35,16 @@ const categorySchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Auto slug generation before save
+categorySchema.pre('save', function () {
+  if (this.name) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  }
+});
 
 // Optimize search queries
 categorySchema.index({ name: 'text' });

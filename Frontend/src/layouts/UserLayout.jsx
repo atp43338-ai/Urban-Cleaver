@@ -1,12 +1,15 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Flame, ShieldCheck, Truck, Scale, HeartHandshake } from 'lucide-react';
 
 const UserLayout = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-zinc-900 font-sans">
-      <Navbar />
+      {!isHomePage && <Navbar />}
       <main className="flex-1 flex flex-col">
         <Outlet />
       </main>

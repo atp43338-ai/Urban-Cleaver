@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import productService from '@/features/product/services/productService';
+import Navbar from '../components/Navbar';
+import SubCategoryNav from '../components/SubCategoryNav';
 import HeroSection from '../components/HeroSection';
 import CircularCategoryBar from '../components/CircularCategoryBar';
 import RecipeFilterSection from '../components/RecipeFilterSection';
 import CategoryFilterSection from '../components/CategoryFilterSection';
 import HomeProductGrid from '../components/HomeProductGrid';
 import SubscriptionBanner from '../components/SubscriptionBanner';
-import NetWeightModal from '../components/NetWeightModal';
 import FreshBatchBadge from '../components/FreshBatchBadge';
 import { Search, X } from 'lucide-react';
 
 /**
  * Home:
- * Orchestrator customer home page strictly adhering to feature-based architecture:
- * 1. <HeroSection />
- * 2. <CircularCategoryBar /> (Curated circular meat plates showcase directly under hero)
- * 3. Catalog Section with Search, Category Filter, Recipe Filter & <HomeProductGrid />
- * 4. <SubscriptionBanner /> (Weekly Cleaver Pass subscription highlight)
- * 5. <NetWeightModal />
+ * Clean orchestrator for Urban Cleaver customer storefront.
+ * Structure:
+ * 1. Fixed Top Dark Navbar
+ * 2. SubCategoryNav (Flows beneath fixed navbar)
+ * 3. Edge-to-Edge HeroSection (w-screen safe)
+ * 4. CircularCategoryBar (Curated meat plate categories)
+ * 5. Catalog Grid with Search & Purpose Filters
+ * 6. Weekly Subscription Cleaver Pass
  */
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -25,13 +28,11 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   // Filter States
+  const [selectedSubCatId, setSelectedSubCatId] = useState('all');
   const [selectedCircularId, setSelectedCircularId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRecipe, setSelectedRecipe] = useState('all');
   const [search, setSearch] = useState('');
-
-  // Info Modal State
-  const [isNetWeightModalOpen, setIsNetWeightModalOpen] = useState(false);
 
   // Fetch Categories on mount
   useEffect(() => {
@@ -52,7 +53,7 @@ const Home = () => {
     };
   }, []);
 
-  // Fetch Products whenever filters change (with debounce)
+  // Fetch Products with Debounce
   useEffect(() => {
     let isMounted = true;
     const fetchProducts = async () => {
@@ -81,6 +82,40 @@ const Home = () => {
     };
   }, [selectedCategory, selectedRecipe, search]);
 
+  // Handle Sub-Category Strip Selection
+  const handleSelectSubCategory = (item) => {
+    if (item.id === 'all' || selectedSubCatId === item.id) {
+      setSelectedSubCatId('all');
+      setSelectedCategory('all');
+      setSearch('');
+    } else {
+      setSelectedSubCatId(item.id);
+      setSelectedCircularId(null);
+
+      const isMutton = item.keyword.toLowerCase().includes('mutton');
+      const isBeef = item.keyword.toLowerCase().includes('beef');
+
+      const matchedCat = categories.find((cat) => {
+        const name = (cat.name || '').toLowerCase();
+        if (isMutton && name.includes('mutton')) return true;
+        if (isBeef && name.includes('beef')) return true;
+        return false;
+      });
+
+      if (matchedCat) {
+        setSelectedCategory(matchedCat._id || matchedCat.id);
+      }
+
+      setSearch(item.keyword);
+    }
+
+    const el = document.getElementById('cuts-catalog') || document.getElementById('catalog-grid');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Handle Circular Category Selection
   const handleSelectCircularCategory = (item) => {
     if (selectedCircularId === item.id) {
       setSelectedCircularId(null);
@@ -88,8 +123,8 @@ const Home = () => {
       setSearch('');
     } else {
       setSelectedCircularId(item.id);
+      setSelectedSubCatId('all');
 
-      // Check if keyword maps to a backend category
       const matchedCat = categories.find((cat) => {
         const catName = (cat.name || '').toLowerCase();
         return catName.includes(item.keyword);
@@ -99,9 +134,7 @@ const Home = () => {
         setSelectedCategory(matchedCat._id || matchedCat.id);
         if (item.id === 'kuttan-beef') {
           setSearch('Kuttan');
-        } else if (item.id === 'pakistani-mutton') {
-          setSearch('Pakistani');
-        } else if (item.id === 'pakistani-beef') {
+        } else if (item.id === 'pakistani-mutton' || item.id === 'pakistani-beef') {
           setSearch('Pakistani');
         } else if (item.id === 'artisanal-mince') {
           setSearch('Mince');
@@ -116,7 +149,6 @@ const Home = () => {
       }
     }
 
-    // Scroll smoothly to catalog section
     const el = document.getElementById('cuts-catalog') || document.getElementById('catalog-grid');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -124,6 +156,7 @@ const Home = () => {
   };
 
   const handleResetFilters = () => {
+    setSelectedSubCatId('all');
     setSelectedCircularId(null);
     setSelectedCategory('all');
     setSelectedRecipe('all');
@@ -131,43 +164,58 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-white text-zinc-900 min-h-screen">
-      {/* 1. Cinematic Hero Section */}
-      <HeroSection onOpenStandardModal={() => setIsNetWeightModalOpen(true)} />
+    <div className="bg-white text-zinc-900 min-h-screen overflow-x-hidden">
+      {/* 1. Fixed Top Dark Navbar */}
+      <Navbar
+        search={search}
+        onSearchChange={setSearch}
+        cartCount={0}
+      />
 
-      {/* 2. New Circular Quick-Category Showcase Strip (Directly beneath hero in white space) */}
+      {/* 2. Sub-Category Strip (Flows directly beneath navbar) */}
+      <SubCategoryNav
+        activeCategoryId={selectedSubCatId}
+        onSelectCategory={handleSelectSubCategory}
+        className="mt-20"
+      />
+
+      {/* 3. Full-Bleed Edge-to-Edge Hero Banner */}
+      <HeroSection />
+
+      {/* 4. Circular Plate Categories Showcase */}
       <CircularCategoryBar
         activeId={selectedCircularId}
         onSelectCategory={handleSelectCircularCategory}
       />
 
-      {/* 3. Catalog Section Container */}
-      <section id="cuts-catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      {/* 5. Product Catalog Container */}
+      <section id="cuts-catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div className="space-y-6">
-          {/* Section Header, Fresh Batch Badge & Search */}
+          
+          {/* Header Strip with Live Batch Status & In-Catalog Search */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-100 pb-5">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FreshBatchBadge time="6:00 AM" facility="Sterile Cold-Chain" />
-              <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
-                Fresh Cuts Prepared for Your Recipe
+              <h2 className="text-xl sm:text-2xl font-bold text-black tracking-tight uppercase">
+                Artisanal Cuts Prepared for Your Pot
               </h2>
               <p className="text-xs sm:text-sm text-zinc-500 max-w-xl">
-                Selected from 100% antibiotic-free farm livestock. Zero waste, precision-sliced to order.
+                Pakistani &amp; Indian cuts — precision sliced daily. Zero unwanted trimmings.
               </p>
             </div>
 
-            {/* Quick Search Input */}
+            {/* Catalog Search Field */}
             <div className="relative w-full md:w-72">
               <Search
-                size={15}
+                size={14}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
               />
               <input
                 type="text"
-                placeholder="Search cuts (e.g. biryani, boneless)..."
+                placeholder="Search cuts (e.g. mutton, kuttan)..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-9 pr-8 text-xs bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition"
+                className="w-full h-9 pl-9 pr-8 text-xs bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition"
               />
               {search && (
                 <button
@@ -175,47 +223,41 @@ const Home = () => {
                   onClick={() => setSearch('')}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black p-0.5 cursor-pointer"
                 >
-                  <X size={14} />
+                  <X size={13} />
                 </button>
               )}
             </div>
           </div>
 
-          {/* 4. Category Filter Section (Meat Department Tabs) */}
+          {/* Department Tabs */}
           <CategoryFilterSection
             categories={categories}
             activeCategory={selectedCategory}
             onSelectCategory={(catId) => {
               setSelectedCategory(catId);
+              setSelectedSubCatId('all');
               setSelectedCircularId(null);
             }}
           />
 
-          {/* 5. Recipe Filter Section (Shop by Dish Purpose) */}
+          {/* Recipe / Purpose Filter */}
           <RecipeFilterSection
             activeRecipe={selectedRecipe}
             onSelectRecipe={setSelectedRecipe}
             totalCount={products.length}
           />
 
-          {/* 6. Products Grid */}
+          {/* Products Grid */}
           <HomeProductGrid
             products={products}
             loading={loading}
             onResetFilters={handleResetFilters}
-            onOpenStandardModal={() => setIsNetWeightModalOpen(true)}
           />
         </div>
       </section>
 
-      {/* 4. Weekly Subscription Cleaver Pass Highlight */}
+      {/* 6. Weekly Cleaver Subscription Pass */}
       <SubscriptionBanner />
-
-      {/* 5. 100% Net Usable Weight Transparency Modal */}
-      <NetWeightModal
-        isOpen={isNetWeightModalOpen}
-        onClose={() => setIsNetWeightModalOpen(false)}
-      />
     </div>
   );
 };

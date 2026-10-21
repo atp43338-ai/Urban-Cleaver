@@ -118,7 +118,7 @@ const ProductDetailsPage = () => {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="bg-white min-h-screen py-10">
+      <div className="bg-white min-h-screen py-10 pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-pulse">
           <div className="h-4 bg-zinc-100 rounded w-1/4"></div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -141,7 +141,7 @@ const ProductDetailsPage = () => {
   // Error state
   if (error || !product) {
     return (
-      <div className="bg-white min-h-[70vh] flex items-center justify-center py-16 px-4">
+      <div className="bg-white min-h-[70vh] flex items-center justify-center py-16 pt-28 px-4">
         <div className="max-w-md w-full text-center space-y-4 p-8 border border-zinc-200 rounded-2xl bg-zinc-50">
           <div className="w-12 h-12 rounded-full bg-zinc-200 text-black flex items-center justify-center mx-auto font-bold text-lg">
             !
@@ -179,7 +179,7 @@ const ProductDetailsPage = () => {
   const grandTotal = meatTotal + kitsTotal;
 
   return (
-    <div className="bg-white text-zinc-900 min-h-screen pb-28">
+    <div className="bg-white text-zinc-900 min-h-screen pb-28 pt-20">
       {/* Breadcrumb Navigation */}
       <div className="border-b border-zinc-100 bg-zinc-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">

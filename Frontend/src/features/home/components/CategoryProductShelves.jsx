@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import HomeProductCard from './HomeProductCard';
 import { PackageOpen, ArrowRight, RotateCcw } from 'lucide-react';
 
@@ -191,14 +192,13 @@ const CategoryProductShelves = ({
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onSelectCategory && onSelectCategory(category)}
+              <Link
+                to={`/products?category=${catId || category.slug || category.name}`}
                 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 hover:text-black flex items-center gap-1 transition cursor-pointer"
               >
                 <span>View All</span>
                 <ArrowRight size={12} />
-              </button>
+              </Link>
             </div>
 
             {/* Product Cards Row (5 Columns on Desktop) */}

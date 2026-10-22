@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import UserLayout from '../layouts/UserLayout';
 import AuthLayout from '../layouts/AuthLayout';
 import Home from '../features/home/pages/Home';
+import ProductListing from '../features/product/pages/ProductListing';
 import ProductDetailsPage from '../features/product/pages/ProductDetailsPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import LoginPage from '../features/auth/pages/LoginPage';
@@ -18,6 +19,7 @@ export const getUserRoutes = () => [
   // 1. Storefront Routes (Navbar + Outlet + Footer)
   <Route key="customer-store" element={<UserLayout />}>
     <Route path="/" element={<Home />} />
+    <Route path="/products" element={<ProductListing />} />
     <Route path="/product/:id" element={<ProductDetailsPage />} />
   </Route>,
 

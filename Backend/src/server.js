@@ -4,7 +4,21 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const connectDB = require('./config/db');
-const rootRouter = require('./routes/index');
+
+// --- 1. Customer Storefront Module Routers ---
+const authRoutes = require('./features/auth/routes/authRoutes');
+const categoryRoutes = require('./features/category/routes/categoryRoutes');
+const productRoutes = require('./features/product/routes/productRoutes');
+const cutRoutes = require('./features/product/routes/cutRoutes');
+const { router: pantryRouter, publicRouter: pantryPublicRoutes } = require('./features/grocery/routes/groceryRoutes');
+
+// --- 2. Admin Management Feature Routers (features/admin/) ---
+const adminAuthRoutes = require('./features/admin/auth/routes/adminAuthroutes');
+const adminCategoryRoutes = require('./features/admin/category/routes/adminCategoryroutes');
+const adminProductRoutes = require('./features/admin/product/routes/adminProductroutes');
+const adminCutRoutes = require('./features/admin/product/routes/adminCutroutes');
+const adminDashboardRoutes = require('./features/admin/dashboard/routes/adminDashboardroutes');
+const adminUserRoutes = require('./features/admin/user/routes/adminUserroutes');
 
 const app = express();
 
@@ -21,7 +35,6 @@ const allowedOrigins = [
 // Configure CORS BEFORE any routes (Express 5 compatible)
 const corsOptions = {
   origin: (origin, callback) => {
-    // If no origin (e.g. server-to-server or curl) or in allowed list, permit
     if (
       !origin ||
       allowedOrigins.includes(origin) ||
@@ -57,8 +70,50 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Connect to MongoDB
 connectDB();
 
-// Mount single centralized root API router
-app.use('/api', rootRouter);
+// Health & Info Endpoint: GET /api
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'healthy',
+    project: 'Urban Cleaver API',
+    version: '2.0.0 (Modular Domain Architecture)',
+    adminEndpoints: {
+      auth: '/api/admin/auth',
+      categories: '/api/admin/categories',
+      products: '/api/admin/products',
+      cuts: '/api/admin/cuts',
+      dashboard: '/api/admin/dashboard',
+      users: '/api/admin/users',
+    },
+    storefrontEndpoints: {
+      auth: '/api/auth',
+      products: '/api/products',
+      categories: '/api/categories',
+      cuts: '/api/cuts',
+      pantry: '/api/pantry',
+    },
+  });
+});
+
+// --- MOUNT ADMIN MANAGEMENT ROUTES (features/admin/) ---
+app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin/categories', adminCategoryRoutes);
+app.use('/api/admin/products', adminProductRoutes);
+app.use('/api/admin/cuts', adminCutRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/users', adminUserRoutes);
+
+// --- MOUNT STOREFRONT ROUTES ---
+app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cuts', cutRoutes);
+app.use('/api/pantry', pantryRouter);
+
+// --- STOREFRONT PUBLIC COMPATIBILITY ALIASES ---
+app.use('/api/public/categories', categoryRoutes);
+app.use('/api/public/products', productRoutes);
+app.use('/api/public/cuts', cutRoutes);
+app.use('/api/public/pantry', pantryPublicRoutes);
 
 // Root Ping
 app.get('/', (req, res) => {
@@ -84,7 +139,7 @@ app.use((err, req, res, next) => {
   if (err.code === 11000) {
     statusCode = 409;
     const field = Object.keys(err.keyValue || {})[0] || 'field';
-    message = `An account with this ${field} already exists.`;
+    message = `An account or record with this ${field} already exists.`;
   }
 
   if (err.name === 'ValidationError') {

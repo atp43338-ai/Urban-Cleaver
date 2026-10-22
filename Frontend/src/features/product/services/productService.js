@@ -1,8 +1,8 @@
 import api from '../../../services/api';
 
 /**
- * Service for fetching products and categories from storefront API
- * Backed by /api/public/categories and /api/public/products
+ * Service for fetching products, categories, and cuts from storefront API
+ * Backed by /api/public/categories, /api/public/cuts, and /api/public/products
  */
 const productService = {
   /**
@@ -10,6 +10,14 @@ const productService = {
    */
   async getCategories(params = {}) {
     const response = await api.get('/public/categories', { params });
+    return response.data;
+  },
+
+  /**
+   * Fetch culinary cuts for storefront filter tabs
+   */
+  async getCuts(params = {}) {
+    const response = await api.get('/public/cuts', { params });
     return response.data;
   },
 

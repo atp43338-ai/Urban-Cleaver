@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import productService from '../services/productService';
 import categoryService from '../../categories/services/categoryService';
 import ProductModal from '../components/ProductModal';
+import CutModal from '../../cuts/components/CutModal';
 import { getFullImageUrl } from '../../../../utils/imageUrl';
 import {
   Package,
@@ -17,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  UtensilsCrossed,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -43,6 +45,7 @@ const AdminProductsPage = () => {
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCutModalOpen, setIsCutModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
@@ -180,14 +183,27 @@ const AdminProductsPage = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold transition active:scale-[0.99] cursor-pointer"
-        >
-          <Plus size={15} />
-          Add Product
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Add Cut Button */}
+          <button
+            type="button"
+            onClick={() => setIsCutModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg text-xs font-semibold transition active:scale-[0.99] cursor-pointer shadow-xs"
+          >
+            <UtensilsCrossed size={14} />
+            Add Cut
+          </button>
+
+          {/* Add Product Button */}
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold transition active:scale-[0.99] cursor-pointer"
+          >
+            <Plus size={15} />
+            Add Product
+          </button>
+        </div>
       </div>
 
       {/* Metric Cards */}
@@ -297,7 +313,7 @@ const AdminProductsPage = () => {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                  <th className="py-3.5 px-5">Product & Cut</th>
+                  <th className="py-3.5 px-5">Product &amp; Cut</th>
                   <th className="py-3.5 px-5">Category</th>
                   <th className="py-3.5 px-5">Price</th>
                   <th className="py-3.5 px-5">Weight (Gross / Net)</th>
@@ -470,6 +486,15 @@ const AdminProductsPage = () => {
         product={editingProduct}
         categories={categories}
         isSubmitting={isSubmitting}
+      />
+
+      {/* Cut Modal */}
+      <CutModal
+        isOpen={isCutModalOpen}
+        onClose={() => setIsCutModalOpen(false)}
+        onSuccess={() => {
+          fetchProducts();
+        }}
       />
     </div>
   );

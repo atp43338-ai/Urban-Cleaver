@@ -31,6 +31,7 @@ class ProductController {
       const {
         name,
         category,
+        cutStyle,
         description,
         price,
         grossWeight,
@@ -70,6 +71,7 @@ class ProductController {
       const product = await productService.createProduct({
         name,
         category,
+        cutStyle,
         description,
         price,
         grossWeight,

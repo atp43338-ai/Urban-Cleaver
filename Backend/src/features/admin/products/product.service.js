@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Product = require('./product.model');
 const Category = require('../categories/category.model');
 
@@ -39,6 +40,7 @@ class ProductService {
   async createProduct({
     name,
     category,
+    cutStyle,
     description,
     price,
     grossWeight,
@@ -88,6 +90,7 @@ class ProductService {
     const product = await Product.create({
       name: name.trim(),
       category: categoryDoc._id,
+      cutStyle: mongoose.Types.ObjectId.isValid(cutStyle) ? cutStyle : undefined,
       description: description ? description.trim() : '',
       price: Number(price),
       grossWeight: grossWeight.trim(),
@@ -97,7 +100,7 @@ class ProductService {
       isStock: typeof isStock === 'boolean' ? isStock : true,
     });
 
-    return await product.populate('category', 'name isActive');
+    return await product.populate('category', 'name slug image isActive');
   }
 
   /**
@@ -110,7 +113,7 @@ class ProductService {
     cutType,
     recipe,
     page = 1,
-    limit = 10,
+    limit = 100,
   } = {}) {
     const query = {};
 
@@ -122,8 +125,38 @@ class ProductService {
       ];
     }
 
+    // Robust category matching by ObjectId, slug, or normalized name
     if (category && category !== 'all') {
-      query.category = category;
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        query.category = category;
+      } else {
+        const cleanCat = String(category).toLowerCase().trim();
+        const catDoc = await Category.findOne({
+          $or: [
+            { slug: cleanCat },
+            { name: { $regex: new RegExp(`^${category.trim()}$`, 'i') } },
+            { name: { $regex: cleanCat.replace(/-/g, ' '), $options: 'i' } },
+          ],
+        });
+
+        if (catDoc) {
+          query.category = catDoc._id;
+        } else {
+          // If not found by Category ID or slug, check if name matches as keyword
+          const fallbackFilter = {
+            $or: [
+              { name: { $regex: cleanCat.replace(/-/g, ' '), $options: 'i' } },
+              { description: { $regex: cleanCat.replace(/-/g, ' '), $options: 'i' } },
+            ],
+          };
+          if (query.$or) {
+            query.$and = [{ $or: query.$or }, fallbackFilter];
+            delete query.$or;
+          } else {
+            Object.assign(query, fallbackFilter);
+          }
+        }
+      }
     }
 
     if (stockStatus === 'inStock') {
@@ -134,60 +167,33 @@ class ProductService {
 
     const filterRecipe = recipe || cutType;
     if (filterRecipe && filterRecipe !== 'all') {
-      const lower = filterRecipe.toLowerCase().trim();
-      let recipeCondition;
-
-      if (lower.includes('biryani')) {
-        recipeCondition = {
-          $or: [
-            { cutTypes: { $regex: /biryani/i } },
-            { name: { $regex: /biryani/i } },
-            { description: { $regex: /biryani/i } },
-          ],
-        };
-      } else if (lower.includes('curry') || lower.includes('slow')) {
-        recipeCondition = {
-          $or: [
-            { cutTypes: { $regex: /curry|soup/i } },
-            { name: { $regex: /curry|rogan|stew/i } },
-            { description: { $regex: /curry|slow/i } },
-          ],
-        };
-      } else if (lower.includes('fry') || lower.includes('roast') || lower.includes('pan')) {
-        recipeCondition = {
-          $or: [
-            { cutTypes: { $regex: /boneless|steak|roast|chop/i } },
-            { name: { $regex: /fry|roast|steak|fillet|breast/i } },
-            { description: { $regex: /fry|roast|steak|sear/i } },
-          ],
-        };
-      } else if (lower.includes('diet') || lower.includes('protein')) {
-        recipeCondition = {
-          $or: [
-            { cutTypes: { $regex: /boneless|keema/i } },
-            { name: { $regex: /breast|fillet|salmon|lean/i } },
-            { description: { $regex: /protein|lean|keto/i } },
-          ],
-        };
-      } else {
-        recipeCondition = { cutTypes: { $regex: new RegExp(filterRecipe.trim(), 'i') } };
-      }
+      const cleanRecipe = String(filterRecipe).trim().replace(/-/g, '[-\\s]?');
+      const recipeCondition = {
+        $or: [
+          { cutTypes: { $regex: cleanRecipe, $options: 'i' } },
+          { name: { $regex: cleanRecipe, $options: 'i' } },
+          { description: { $regex: cleanRecipe, $options: 'i' } },
+        ],
+      };
 
       if (query.$or) {
         query.$and = [{ $or: query.$or }, recipeCondition];
         delete query.$or;
+      } else if (query.$and) {
+        query.$and.push(recipeCondition);
       } else {
         Object.assign(query, recipeCondition);
       }
     }
 
     const parsedPage = Math.max(1, parseInt(page, 10) || 1);
-    const parsedLimit = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const parsedLimit = Math.max(1, Math.min(200, parseInt(limit, 10) || 100));
     const skip = (parsedPage - 1) * parsedLimit;
 
     const [products, totalCount] = await Promise.all([
       Product.find(query)
-        .populate('category', 'name isActive')
+        .populate('category', 'name slug image isActive')
+        .populate('cutStyle', 'name slug sublabel')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parsedLimit),
@@ -221,7 +227,9 @@ class ProductService {
    * Get single product by ID
    */
   async getProductById(id) {
-    const product = await Product.findById(id).populate('category', 'name isActive');
+    const product = await Product.findById(id)
+      .populate('category', 'name slug image isActive')
+      .populate('cutStyle', 'name slug sublabel');
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -248,11 +256,11 @@ class ProductService {
     if (updateData.category) {
       const catExists = await Category.findById(updateData.category);
       if (!catExists) {
-        const error = new Error('Selected category does not exist');
+        const error = new Error('Category not found');
         error.statusCode = 404;
         throw error;
       }
-      product.category = catExists._id;
+      product.category = updateData.category;
     }
 
     if (updateData.description !== undefined) {
@@ -263,16 +271,22 @@ class ProductService {
       product.price = Number(updateData.price);
     }
 
-    if (updateData.grossWeight && updateData.grossWeight.trim()) {
+    if (updateData.grossWeight) {
       product.grossWeight = updateData.grossWeight.trim();
     }
 
-    if (updateData.netWeight && updateData.netWeight.trim()) {
+    if (updateData.netWeight) {
       product.netWeight = updateData.netWeight.trim();
     }
 
-    if (updateData.cutTypes !== undefined) {
+    if (updateData.cutTypes) {
       product.cutTypes = this._normalizeCutTypes(updateData.cutTypes);
+    }
+
+    if (updateData.cutStyle !== undefined) {
+      product.cutStyle = mongoose.Types.ObjectId.isValid(updateData.cutStyle)
+        ? updateData.cutStyle
+        : undefined;
     }
 
     if (updateData.images !== undefined) {
@@ -284,7 +298,10 @@ class ProductService {
     }
 
     await product.save();
-    return await product.populate('category', 'name isActive');
+    return await product.populate([
+      { path: 'category', select: 'name slug image isActive' },
+      { path: 'cutStyle', select: 'name slug sublabel' },
+    ]);
   }
 
   /**

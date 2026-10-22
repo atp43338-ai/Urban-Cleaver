@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema(
       ref: 'Category',
       required: [true, 'Product category is required'],
     },
+    cutStyle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Cut',
+    },
     description: {
       type: String,
       trim: true,
@@ -56,6 +60,7 @@ const productSchema = new mongoose.Schema(
 // Search indexes
 productSchema.index({ name: 'text', description: 'text' });
 productSchema.index({ category: 1, isStock: 1 });
+productSchema.index({ cutStyle: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 

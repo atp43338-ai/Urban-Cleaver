@@ -1,29 +1,63 @@
 import React from 'react';
 import { UtensilsCrossed } from 'lucide-react';
 
-export const CULINARY_CUT_TABS = [
-  { id: 'all', label: 'All Cuts', sublabel: 'Full Selection', keyword: '' },
-  { id: 'beef-keema', label: 'Beef Keema', sublabel: 'Mince', keyword: 'Beef Keema' },
-  { id: 'mutton-keema', label: 'Mutton Keema', sublabel: 'Mince', keyword: 'Mutton Keema' },
-  { id: 'beef-cube', label: 'Beef Cube', sublabel: 'Stew / Curry', keyword: 'Beef Cube' },
-  { id: 'beef-kurma', label: 'Beef Kurma', sublabel: 'Slow Cook', keyword: 'Beef Kurma' },
-  { id: 'biriyani-cutting', label: 'Biriyani Cutting', sublabel: 'Dum Pieces', keyword: 'Biriyani' },
-  { id: 'saloona-cutting', label: 'Saloona Cutting', sublabel: 'Arabic Stew', keyword: 'Saloona' },
-  { id: 'finger-cutting', label: 'Finger Cutting', sublabel: 'French Fries Cut', keyword: 'Finger' },
-  { id: 'beef-pasantha', label: 'Beef Pasantha', sublabel: 'Thin Cut', keyword: 'Pasantha' },
-  { id: 'burger', label: 'Burger', sublabel: 'Patty Cut', keyword: 'Burger' },
-  { id: 'kebab-cutting', label: 'Kebab Cutting', sublabel: 'Skewer / Boti', keyword: 'Kebab' },
+export const DEFAULT_CULINARY_CUTS = [
+  { id: 'all', label: 'All Cuts', sublabel: 'Full Selection' },
+  { id: 'beef-keema', label: 'Beef Keema', sublabel: 'Mince' },
+  { id: 'mutton-keema', label: 'Mutton Keema', sublabel: 'Mince' },
+  { id: 'beef-cube', label: 'Beef Cube', sublabel: 'Stew / Curry' },
+  { id: 'beef-kurma', label: 'Beef Kurma', sublabel: 'Slow Cook' },
+  { id: 'biriyani-cutting', label: 'Biriyani Cutting', sublabel: 'Dum Pieces' },
+  { id: 'saloona-cutting', label: 'Saloona Cutting', sublabel: 'Arabic Stew' },
+  { id: 'finger-cutting', label: 'Finger Cutting', sublabel: 'French Fries Cut' },
+  { id: 'beef-pasantha', label: 'Beef Pasantha', sublabel: 'Thin Cut' },
+  { id: 'burger', label: 'Burger', sublabel: 'Patty Cut' },
+  { id: 'kebab-cutting', label: 'Kebab Cutting', sublabel: 'Skewer / Boti' },
 ];
 
 /**
  * RecipeFilterSection:
- * Filters strictly by kitchen preparation cut styles.
+ * Dynamic cut tabs synchronized with backend Cut database.
+ * Filters strictly by kitchen preparation cut styles and cooking purposes.
  */
 const RecipeFilterSection = ({
+  cuts = [],
   activeRecipe = 'all',
   onSelectRecipe,
   totalCount,
 }) => {
+  // Build items dynamically from backend cuts if available, otherwise fallback
+  let tabs = [];
+  if (cuts && cuts.length > 0) {
+    tabs = [
+      { id: 'all', label: 'All Cuts', sublabel: 'Full Selection' },
+      ...cuts.map((c) => ({
+        id: c.slug || c._id || c.name,
+        label: c.name,
+        sublabel: c.sublabel || 'Culinary Cut',
+        raw: c,
+      })),
+    ];
+  } else {
+    tabs = DEFAULT_CULINARY_CUTS;
+  }
+
+  const isTabActive = (tab) => {
+    if (tab.id === 'all') {
+      return !activeRecipe || activeRecipe === 'all';
+    }
+    const cleanActive = String(activeRecipe).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanId = String(tab.id).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanLabel = String(tab.label).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    return (
+      activeRecipe === tab.id ||
+      cleanActive === cleanId ||
+      cleanActive === cleanLabel ||
+      cleanLabel.includes(cleanActive)
+    );
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -33,14 +67,15 @@ const RecipeFilterSection = ({
         </div>
         {totalCount !== undefined && (
           <span className="text-[11px] font-mono text-zinc-400">
-            {totalCount} {totalCount === 1 ? 'item' : 'items'} available
+            {totalCount} {totalCount === 1 ? 'cut' : 'cuts'} available
           </span>
         )}
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none select-none">
-        {CULINARY_CUT_TABS.map((tab) => {
-          const isActive = activeRecipe === tab.id;
+        {tabs.map((tab) => {
+          const isActive = isTabActive(tab);
+
           return (
             <button
               key={tab.id}
@@ -53,15 +88,17 @@ const RecipeFilterSection = ({
               }`}
             >
               <span>{tab.label}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                  isActive
-                    ? 'bg-zinc-800 text-zinc-300'
-                    : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 group-hover:text-black'
-                }`}
-              >
-                {tab.sublabel}
-              </span>
+              {tab.sublabel && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                    isActive
+                      ? 'bg-zinc-800 text-zinc-300'
+                      : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 group-hover:text-black'
+                  }`}
+                >
+                  {tab.sublabel}
+                </span>
+              )}
             </button>
           );
         })}

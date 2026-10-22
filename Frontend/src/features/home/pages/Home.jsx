@@ -6,63 +6,79 @@ import HeroSection from '../components/HeroSection';
 import CircularCategoryBar from '../components/CircularCategoryBar';
 import RecipeFilterSection from '../components/RecipeFilterSection';
 import CategoryFilterSection from '../components/CategoryFilterSection';
-import HomeProductGrid from '../components/HomeProductGrid';
+import CategoryProductShelves from '../components/CategoryProductShelves';
 import SubscriptionBanner from '../components/SubscriptionBanner';
 import FreshBatchBadge from '../components/FreshBatchBadge';
 import { Search, X } from 'lucide-react';
 
 /**
  * Home:
- * Clean orchestrator for Urban Cleaver customer storefront.
+ * Orchestrator for Urban Cleaver customer storefront.
  * Structure:
  * 1. Fixed Top Dark Navbar
- * 2. SubCategoryNav (Flows beneath fixed navbar)
- * 3. Edge-to-Edge HeroSection (w-screen safe)
+ * 2. SubCategoryNav (Flows beneath fixed navbar with mt-20 offset)
+ * 3. Edge-to-Edge HeroSection (Hero butcher banner)
  * 4. CircularCategoryBar (Curated meat plate categories)
- * 5. Catalog Grid with Search & Purpose Filters
+ * 5. CategoryProductShelves (Multi-row category-segregated product showcase, 5 cards per shelf)
  * 6. Weekly Subscription Cleaver Pass
  */
 const Home = () => {
   const [categories, setCategories] = useState([]);
+  const [cuts, setCuts] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filter States
-  const [selectedSubCatId, setSelectedSubCatId] = useState('all');
-  const [selectedCircularId, setSelectedCircularId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRecipe, setSelectedRecipe] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Fetch Categories on mount
+  // Fetch Categories & Cuts on mount
   useEffect(() => {
     let isMounted = true;
-    const fetchCategories = async () => {
+
+    const fetchInitialData = async () => {
       try {
-        const res = await productService.getCategories();
+        const [catRes, cutRes] = await Promise.allSettled([
+          productService.getCategories(),
+          productService.getCuts(),
+        ]);
+
         if (isMounted) {
-          setCategories(res.categories || []);
+          if (catRes.status === 'fulfilled' && catRes.value?.categories) {
+            setCategories(catRes.value.categories);
+          }
+          if (cutRes.status === 'fulfilled' && cutRes.value?.cuts) {
+            setCuts(cutRes.value.cuts);
+          }
         }
       } catch (err) {
-        console.error('Failed to fetch categories:', err);
+        console.error('Failed to fetch initial home catalog data:', err);
       }
     };
-    fetchCategories();
+
+    fetchInitialData();
     return () => {
       isMounted = false;
     };
   }, []);
 
-  // Fetch Products with Debounce
+  // Fetch Products with Debounce whenever filters change
   useEffect(() => {
     let isMounted = true;
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const params = {};
-        if (selectedCategory !== 'all') params.category = selectedCategory;
-        if (selectedRecipe !== 'all') params.recipe = selectedRecipe;
-        if (search.trim()) params.search = search.trim();
+        if (selectedCategory && selectedCategory !== 'all') {
+          params.category = selectedCategory;
+        }
+        if (selectedRecipe && selectedRecipe !== 'all') {
+          params.recipe = selectedRecipe;
+        }
+        if (search.trim()) {
+          params.search = search.trim();
+        }
 
         const res = await productService.getProducts(params);
         if (isMounted) {
@@ -82,90 +98,37 @@ const Home = () => {
     };
   }, [selectedCategory, selectedRecipe, search]);
 
-  // Handle Sub-Category Strip Selection
-  const handleSelectSubCategory = (item) => {
-    if (item.id === 'all' || selectedSubCatId === item.id) {
-      setSelectedSubCatId('all');
+  // Handle Category Selection from any component
+  const handleSelectCategory = (catOrItem) => {
+    const targetId = catOrItem?._id || catOrItem?.id || catOrItem;
+
+    if (!targetId || targetId === 'all' || catOrItem?.isAll || selectedCategory === targetId) {
       setSelectedCategory('all');
-      setSearch('');
     } else {
-      setSelectedSubCatId(item.id);
-      setSelectedCircularId(null);
-
-      const isMutton = item.keyword.toLowerCase().includes('mutton');
-      const isBeef = item.keyword.toLowerCase().includes('beef');
-
-      const matchedCat = categories.find((cat) => {
-        const name = (cat.name || '').toLowerCase();
-        if (isMutton && name.includes('mutton')) return true;
-        if (isBeef && name.includes('beef')) return true;
-        return false;
-      });
-
-      if (matchedCat) {
-        setSelectedCategory(matchedCat._id || matchedCat.id);
-      }
-
-      setSearch(item.keyword);
+      setSelectedCategory(targetId);
     }
 
-    const el = document.getElementById('cuts-catalog') || document.getElementById('catalog-grid');
+    const el = document.getElementById('cuts-catalog');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Handle Circular Category Selection
-  const handleSelectCircularCategory = (item) => {
-    if (selectedCircularId === item.id) {
-      setSelectedCircularId(null);
-      setSelectedCategory('all');
-      setSearch('');
-    } else {
-      setSelectedCircularId(item.id);
-      setSelectedSubCatId('all');
-
-      const matchedCat = categories.find((cat) => {
-        const catName = (cat.name || '').toLowerCase();
-        return catName.includes(item.keyword);
-      });
-
-      if (matchedCat) {
-        setSelectedCategory(matchedCat._id || matchedCat.id);
-        if (item.id === 'kuttan-beef') {
-          setSearch('Kuttan');
-        } else if (item.id === 'pakistani-mutton' || item.id === 'pakistani-beef') {
-          setSearch('Pakistani');
-        } else if (item.id === 'artisanal-mince') {
-          setSearch('Mince');
-        } else if (item.id === 'rare-cuts') {
-          setSearch('Nalli');
-        } else {
-          setSearch('');
-        }
-      } else {
-        setSelectedCategory('all');
-        setSearch(item.name);
-      }
-    }
-
-    const el = document.getElementById('cuts-catalog') || document.getElementById('catalog-grid');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+  // Handle Recipe / Cut Style Selection
+  const handleSelectRecipe = (recipeId) => {
+    setSelectedRecipe((prev) => (prev === recipeId ? 'all' : recipeId));
   };
 
+  // Reset all filters
   const handleResetFilters = () => {
-    setSelectedSubCatId('all');
-    setSelectedCircularId(null);
     setSelectedCategory('all');
     setSelectedRecipe('all');
     setSearch('');
   };
 
   return (
-    <div className="bg-white text-zinc-900 min-h-screen overflow-x-hidden">
-      {/* 1. Fixed Top Dark Navbar */}
+    <div className="bg-white text-zinc-900 min-h-screen">
+      {/* 1. Fixed Dark Navbar */}
       <Navbar
         search={search}
         onSearchChange={setSearch}
@@ -174,24 +137,25 @@ const Home = () => {
 
       {/* 2. Sub-Category Strip (Flows directly beneath navbar) */}
       <SubCategoryNav
-        activeCategoryId={selectedSubCatId}
-        onSelectCategory={handleSelectSubCategory}
+        categories={categories}
+        activeCategoryId={selectedCategory}
+        onSelectCategory={handleSelectCategory}
         className="mt-20"
       />
 
       {/* 3. Full-Bleed Edge-to-Edge Hero Banner */}
       <HeroSection />
 
-      {/* 4. Circular Plate Categories Showcase */}
+      {/* 4. Circular Plate Categories Showcase (Dynamic from Backend) */}
       <CircularCategoryBar
-        activeId={selectedCircularId}
-        onSelectCategory={handleSelectCircularCategory}
+        categories={categories}
+        activeId={selectedCategory}
+        onSelectCategory={handleSelectCategory}
       />
 
-      {/* 5. Product Catalog Container */}
+      {/* 5. Product Catalog & Category Shelves Container */}
       <section id="cuts-catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-        <div className="space-y-6">
-          
+        <div className="space-y-8">
           {/* Header Strip with Live Batch Status & In-Catalog Search */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-100 pb-5">
             <div className="space-y-1">
@@ -212,7 +176,7 @@ const Home = () => {
               />
               <input
                 type="text"
-                placeholder="Search cuts (e.g. mutton, kuttan)..."
+                placeholder="Search cuts (e.g. mutton, biriyani)..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full h-9 pl-9 pr-8 text-xs bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition"
@@ -233,24 +197,26 @@ const Home = () => {
           <CategoryFilterSection
             categories={categories}
             activeCategory={selectedCategory}
-            onSelectCategory={(catId) => {
-              setSelectedCategory(catId);
-              setSelectedSubCatId('all');
-              setSelectedCircularId(null);
-            }}
+            onSelectCategory={handleSelectCategory}
           />
 
-          {/* Recipe / Purpose Filter */}
+          {/* Dynamic Recipe / Cut Style Filter */}
           <RecipeFilterSection
+            cuts={cuts}
             activeRecipe={selectedRecipe}
-            onSelectRecipe={setSelectedRecipe}
+            onSelectRecipe={handleSelectRecipe}
             totalCount={products.length}
           />
 
-          {/* Products Grid */}
-          <HomeProductGrid
+          {/* Multi-Row Category-Segregated Product Shelves (5 Cards Per Row) */}
+          <CategoryProductShelves
+            categories={categories}
             products={products}
             loading={loading}
+            selectedCategory={selectedCategory}
+            activeRecipe={selectedRecipe}
+            searchQuery={search}
+            onSelectCategory={handleSelectCategory}
             onResetFilters={handleResetFilters}
           />
         </div>

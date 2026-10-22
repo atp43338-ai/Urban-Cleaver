@@ -1,34 +1,102 @@
 import React from 'react';
 
-export const SUB_CATEGORIES = [
-  { id: 'all', label: 'All Cuts', tag: null, keyword: '' },
-  { id: 'indian-beef-boneless', label: 'Indian Beef', tag: 'Boneless', keyword: 'Indian Beef Boneless' },
-  { id: 'indian-mutton-bone', label: 'Indian Mutton', tag: 'Bone-in', keyword: 'Indian Mutton with Bone' },
-  { id: 'indian-mutton-boneless', label: 'Indian Mutton', tag: 'Boneless', keyword: 'Indian Mutton Boneless' },
-  { id: 'pakistan-beef-boneless', label: 'Pakistan Beef', tag: 'Boneless', keyword: 'Pakistan Beef Boneless' },
-  { id: 'pakistan-beef-bone', label: 'Pakistan Beef', tag: 'Bone-in', keyword: 'Pakistan Beef with Bone' },
-  { id: 'kenyan-mutton-bone', label: 'Kenyan Mutton', tag: 'Bone-in', keyword: 'Kenyan Mutton with Bone' },
+const ORDERED_CATEGORY_NAMES = [
+  'Indian beef boneless',
+  'Indian mutton with bone',
+  'Indian mutton boneless',
+  'Pakisthan beef boneless',
+  'Pakisthan beef with bone',
+  'Keniyan mutton with bone',
+];
+
+const DEFAULT_SUB_ITEMS = [
+  { id: 'all', label: 'All Cuts', tag: null },
+  { id: 'indian-beef-boneless', label: 'Indian Beef', tag: 'Boneless' },
+  { id: 'indian-mutton-with-bone', label: 'Indian Mutton', tag: 'Bone-in' },
+  { id: 'indian-mutton-boneless', label: 'Indian Mutton', tag: 'Boneless' },
+  { id: 'pakisthan-beef-boneless', label: 'Pakisthan Beef', tag: 'Boneless' },
+  { id: 'pakisthan-beef-with-bone', label: 'Pakisthan Beef', tag: 'Bone-in' },
+  { id: 'keniyan-mutton-with-bone', label: 'Keniyan Mutton', tag: 'Bone-in' },
 ];
 
 /**
  * SubCategoryNav:
  * Non-fixed horizontal sub-category navigation strip directly beneath the fixed dark navbar.
  * - Minimal two-tier display: Clean Meat Title + Compact Micro Badge (Boneless / Bone-in)
- * - Space-efficient & zero clutter on mobile/desktop screens.
+ * - Automatically derives items from dynamic backend categories with resilient fallback.
  */
 const SubCategoryNav = ({
+  categories = [],
   activeCategoryId = 'all',
   onSelectCategory,
   className = '',
 }) => {
+  let navItems = [];
+
+  if (categories && categories.length > 0) {
+    const sortedCats = [...categories].sort((a, b) => {
+      const aName = (a.name || '').toLowerCase();
+      const bName = (b.name || '').toLowerCase();
+      const aIdx = ORDERED_CATEGORY_NAMES.findIndex((n) => n.toLowerCase() === aName);
+      const bIdx = ORDERED_CATEGORY_NAMES.findIndex((n) => n.toLowerCase() === bName);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return aName.localeCompare(bName);
+    });
+
+    navItems = [
+      { id: 'all', label: 'All Cuts', tag: null, isAll: true },
+      ...sortedCats.map((cat) => {
+        const name = cat.name || '';
+        const isBoneless = name.toLowerCase().includes('boneless');
+        const hasBone = name.toLowerCase().includes('bone');
+        const tag = isBoneless ? 'Boneless' : hasBone ? 'Bone-in' : null;
+
+        // Clean label: e.g. "Indian Beef", "Pakisthan Beef", "Keniyan Mutton"
+        const cleanLabel = name
+          .replace(/boneless/gi, '')
+          .replace(/with bone/gi, '')
+          .replace(/bone-in/gi, '')
+          .trim();
+
+        return {
+          id: cat._id || cat.id,
+          label: cleanLabel || name,
+          tag,
+          raw: cat,
+        };
+      }),
+    ];
+  } else {
+    navItems = DEFAULT_SUB_ITEMS;
+  }
+
+  const isItemActive = (item) => {
+    if (item.id === 'all') {
+      return !activeCategoryId || activeCategoryId === 'all';
+    }
+    const catId = String(item.id || '');
+    const cleanActive = String(activeCategoryId).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanLabel = String(item.label || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const rawName = String(item.raw?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    return (
+      catId === String(activeCategoryId) ||
+      cleanActive === cleanLabel ||
+      cleanActive === rawName ||
+      rawName.includes(cleanActive)
+    );
+  };
+
   return (
     <nav
       className={`relative z-30 bg-white border-b border-zinc-200 py-2.5 px-4 sm:px-6 lg:px-8 select-none ${className}`}
       aria-label="Sub-category Navigation"
     >
       <div className="max-w-7xl mx-auto flex items-center gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-1">
-        {SUB_CATEGORIES.map((item) => {
-          const isActive = activeCategoryId === item.id;
+        {navItems.map((item) => {
+          const isActive = isItemActive(item);
 
           return (
             <button

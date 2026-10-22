@@ -28,10 +28,10 @@ const RecipeFilterSection = ({
 }) => {
   // Build items dynamically from backend cuts if available, otherwise fallback
   let tabs = [];
-  if (cuts && cuts.length > 0) {
+  if (Array.isArray(cuts) && cuts.length > 0) {
     tabs = [
       { id: 'all', label: 'All Cuts', sublabel: 'Full Selection' },
-      ...cuts.map((c) => ({
+      ...(cuts || []).map((c) => ({
         id: c.slug || c._id || c.name,
         label: c.name,
         sublabel: c.sublabel || 'Culinary Cut',

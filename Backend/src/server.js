@@ -10,6 +10,7 @@ const authRoutes = require('./features/auth/routes/authRoutes');
 const categoryRoutes = require('./features/category/routes/categoryRoutes');
 const productRoutes = require('./features/product/routes/productRoutes');
 const cutRoutes = require('./features/product/routes/cutRoutes');
+const cartRoutes = require('./features/cart/routes/cartRoutes');
 const { router: pantryRouter, publicRouter: pantryPublicRoutes } = require('./features/grocery/routes/groceryRoutes');
 
 // --- 2. Admin Management Feature Routers (features/admin/) ---
@@ -26,11 +27,14 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5000',
   'http://127.0.0.1:5000',
-];
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 // Configure CORS BEFORE any routes (Express 5 compatible)
 const corsOptions = {
@@ -47,12 +51,23 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-session-id',
+    'X-Session-Id',
+    'x-guest-id',
+    'X-Guest-Id',
+    'X-Requested-With',
+    'Accept',
+  ],
+  exposedHeaders: ['set-cookie', 'x-session-id'],
   optionsSuccessStatus: 200,
 };
 
 // Global CORS Middleware handles all preflight OPTIONS automatically
 app.use(cors(corsOptions));
+app.options('{*path}', cors(corsOptions));
 
 // Global Request Logger Middleware
 app.use((req, res, next) => {
@@ -107,6 +122,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cuts', cutRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/pantry', pantryRouter);
 
 // --- STOREFRONT PUBLIC COMPATIBILITY ALIASES ---

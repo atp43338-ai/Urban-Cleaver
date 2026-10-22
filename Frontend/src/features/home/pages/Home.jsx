@@ -45,15 +45,23 @@ const Home = () => {
         ]);
 
         if (isMounted) {
-          if (catRes.status === 'fulfilled' && catRes.value?.categories) {
+          if (catRes.status === 'fulfilled' && Array.isArray(catRes.value?.categories)) {
             setCategories(catRes.value.categories);
+          } else {
+            setCategories([]);
           }
-          if (cutRes.status === 'fulfilled' && cutRes.value?.cuts) {
+          if (cutRes.status === 'fulfilled' && Array.isArray(cutRes.value?.cuts)) {
             setCuts(cutRes.value.cuts);
+          } else {
+            setCuts([]);
           }
         }
       } catch (err) {
-        console.error('Failed to fetch initial home catalog data:', err);
+        console.warn('Failed to fetch initial home catalog data:', err.message);
+        if (isMounted) {
+          setCategories([]);
+          setCuts([]);
+        }
       }
     };
 
@@ -82,10 +90,11 @@ const Home = () => {
 
         const res = await productService.getProducts(params);
         if (isMounted) {
-          setProducts(res.products || []);
+          setProducts(Array.isArray(res?.products) ? res.products : []);
         }
       } catch (err) {
-        console.error('Failed to fetch products:', err);
+        console.warn('Failed to fetch products:', err.message);
+        if (isMounted) setProducts([]);
       } finally {
         if (isMounted) setLoading(false);
       }

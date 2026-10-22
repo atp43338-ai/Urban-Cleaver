@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './features/auth/context/AuthContext';
+import { CartProvider } from './features/cart/context/CartContext';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
 
@@ -17,8 +18,9 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Router>
         <AuthProvider>
-          <AppRoutes />
-          <Toaster
+          <CartProvider>
+            <AppRoutes />
+            <Toaster
             position="top-right"
             toastOptions={{
               duration: 4500,
@@ -44,6 +46,7 @@ function App() {
               },
             }}
           />
+          </CartProvider>
         </AuthProvider>
       </Router>
     </GoogleOAuthProvider>

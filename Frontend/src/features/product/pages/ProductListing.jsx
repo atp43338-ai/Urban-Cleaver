@@ -44,15 +44,23 @@ const ProductListing = () => {
         ]);
 
         if (isMounted) {
-          if (catRes.status === 'fulfilled' && catRes.value?.categories) {
+          if (catRes.status === 'fulfilled' && Array.isArray(catRes.value?.categories)) {
             setCategories(catRes.value.categories);
+          } else {
+            setCategories([]);
           }
-          if (cutRes.status === 'fulfilled' && cutRes.value?.cuts) {
+          if (cutRes.status === 'fulfilled' && Array.isArray(cutRes.value?.cuts)) {
             setCuts(cutRes.value.cuts);
+          } else {
+            setCuts([]);
           }
         }
       } catch (err) {
-        console.error('Failed to load catalog metadata:', err);
+        console.warn('Failed to load catalog metadata:', err.message);
+        if (isMounted) {
+          setCategories([]);
+          setCuts([]);
+        }
       }
     };
 
@@ -80,8 +88,8 @@ const ProductListing = () => {
           setProducts(fetchedList);
 
           // Dynamically scale max price range if products exist
-          if (fetchedList.length > 0) {
-            const maxP = Math.max(...fetchedList.map((p) => Number(p.price) || 0));
+          if (Array.isArray(fetchedList) && fetchedList.length > 0) {
+            const maxP = Math.max(...(fetchedList || []).map((p) => Number(p?.price) || 0));
             const calculatedMax = Math.max(Math.ceil(maxP / 100) * 100, 1000);
             setPriceRange([0, calculatedMax]);
             setAppliedPriceRange([0, calculatedMax]);
@@ -134,14 +142,14 @@ const ProductListing = () => {
 
   // Max price available for slider
   const maxAvailablePrice = useMemo(() => {
-    if (!products.length) return 1500;
-    const max = Math.max(...products.map((p) => Number(p.price) || 0));
+    if (!Array.isArray(products) || !products.length) return 1500;
+    const max = Math.max(...(products || []).map((p) => Number(p?.price) || 0));
     return Math.max(Math.ceil(max / 100) * 100, 1000);
   }, [products]);
 
   // 4. Apply In-Memory Filters (Cut, Price, Stock, Search & Sort)
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    let list = Array.isArray(products) ? [...products] : [];
 
     // Culinary Cut Filter
     if (selectedCut && selectedCut !== 'all') {

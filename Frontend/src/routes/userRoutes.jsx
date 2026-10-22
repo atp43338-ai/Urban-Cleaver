@@ -5,6 +5,7 @@ import AuthLayout from '../layouts/AuthLayout';
 import Home from '../features/home/pages/Home';
 import ProductListing from '../features/product/pages/ProductListing';
 import ProductDetailsPage from '../features/product/pages/ProductDetailsPage';
+import Cart from '../features/cart/Cart';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import OtpVerifyPage from '../features/auth/pages/OtpVerifyPage';
@@ -21,6 +22,7 @@ export const getUserRoutes = () => [
     <Route path="/" element={<Home />} />
     <Route path="/products" element={<ProductListing />} />
     <Route path="/product/:id" element={<ProductDetailsPage />} />
+    <Route path="/cart" element={<Cart />} />
   </Route>,
 
   // 2. Customer Authentication Routes (Dedicated AuthLayout)

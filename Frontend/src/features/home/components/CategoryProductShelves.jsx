@@ -67,7 +67,7 @@ const CategoryProductShelves = ({
   }
 
   // Use provided categories or fallback
-  const rawList = categories.length > 0 ? categories : DEFAULT_FALLBACK_CATEGORIES;
+  const rawList = Array.isArray(categories) && categories.length > 0 ? categories : DEFAULT_FALLBACK_CATEGORIES;
 
   // Sort categories according to official base order, then append any additional admin categories
   const sortedCategories = [...rawList].sort((a, b) => {
@@ -114,7 +114,7 @@ const CategoryProductShelves = ({
     const catNameLower = (category.name || '').toLowerCase();
     const cleanCatName = catNameLower.replace(/[^a-z0-9]/g, '');
 
-    const matchedProducts = products.filter((prod) => {
+    const matchedProducts = (products || []).filter((prod) => {
       // 1. Direct ObjectId match
       const prodCatId = String(prod.category?._id || prod.category || '');
       if (prodCatId && catId && prodCatId === catId) return true;
@@ -177,7 +177,7 @@ const CategoryProductShelves = ({
     <div className="space-y-10 sm:space-y-14">
       {shelvesToRender.map(({ category, products: shelfMatchedProducts }) => {
         const catId = category._id || category.id;
-        const displayProducts = shelfMatchedProducts.slice(0, 5);
+        const displayProducts = (shelfMatchedProducts || []).slice(0, 5);
 
         return (
           <section key={catId || category.name} className="space-y-4">

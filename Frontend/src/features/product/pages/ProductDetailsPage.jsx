@@ -10,6 +10,7 @@ import NetWeightAssuranceCard from '../components/NetWeightAssuranceCard';
 import FreshnessStamp from '../components/FreshnessStamp';
 import NetWeightModal from '../components/NetWeightModal';
 import ProductCard from '../components/ProductCard';
+import { useCart } from '@/features/cart/context/CartContext';
 import {
   ChevronRight,
   ShoppingBag,
@@ -27,6 +28,7 @@ import toast from 'react-hot-toast';
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -97,8 +99,10 @@ const ProductDetailsPage = () => {
     );
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product?.isStock) return;
+    await addToCart({ product, productId: id, cutStyle: selectedCut, quantity });
+
 
     if (selectedKits.length > 0) {
       const kitNames = selectedKits

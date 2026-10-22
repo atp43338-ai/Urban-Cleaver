@@ -13,13 +13,21 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// Request interceptor: Inject Bearer token from localStorage
+// Request interceptor: Inject Bearer token and Session ID from localStorage
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('urban_cleaver_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Ensure persistent guest session ID for cart synchronization
+    let sessionId = localStorage.getItem('urban_cleaver_session_id');
+    if (!sessionId) {
+      sessionId = 'guest_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+      localStorage.setItem('urban_cleaver_session_id', sessionId);
+    }
+    config.headers['x-session-id'] = sessionId;
 
     // When sending FormData, let browser/axios generate multipart boundary automatically
     if (config.data instanceof FormData) {
@@ -50,7 +58,7 @@ api.interceptors.response.use(
       data: error.response?.data,
     };
 
-    console.error('[API Response Error Diagnostic]', errorDetails);
+    console.warn('[API Diagnostic]', errorDetails.status ? `Status ${errorDetails.status} on ${errorDetails.url}` : error.message);
 
     // If token expired or unauthorized, optionally clear stored session
     if (error.response?.status === 401) {

@@ -45,10 +45,10 @@ const ProductListingSidebar = ({
 
   // Merge backend cuts with default cuts
   const availableCuts =
-    cuts && cuts.length > 0
+    Array.isArray(cuts) && cuts.length > 0
       ? [
           { id: 'all', label: 'All Cuts' },
-          ...cuts.map((c) => ({
+          ...(cuts || []).map((c) => ({
             id: c.slug || c._id || c.name,
             label: c.name,
           })),

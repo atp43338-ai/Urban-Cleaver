@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
+import { useCart } from '../../cart/context/CartContext';
 import {
   Search,
   MapPin,
@@ -25,10 +26,12 @@ import toast from 'react-hot-toast';
 const Navbar = ({
   search = '',
   onSearchChange,
-  cartCount = 0,
+  cartCount: propCartCount,
   selectedLocation = 'Select Location',
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { cartCount: liveCartCount } = useCart();
+  const cartCount = propCartCount !== undefined && propCartCount > 0 ? propCartCount : liveCartCount;
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -51,12 +54,7 @@ const Navbar = ({
   };
 
   const handleCartClick = () => {
-    const el = document.getElementById('cuts-catalog') || document.getElementById('catalog-grid');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      navigate('/#cuts-catalog');
-    }
+    navigate('/cart');
   };
 
   return (

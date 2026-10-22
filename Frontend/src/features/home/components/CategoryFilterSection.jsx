@@ -30,7 +30,7 @@ const CategoryFilterSection = ({
   onSelectCategory,
 }) => {
   // Use provided categories or fallback
-  const rawList = categories.length > 0 ? categories : DEFAULT_FALLBACK_CATEGORIES;
+  const rawList = Array.isArray(categories) && categories.length > 0 ? categories : DEFAULT_FALLBACK_CATEGORIES;
 
   // Sort according to canonical base order
   const sorted = [...rawList].sort((a, b) => {

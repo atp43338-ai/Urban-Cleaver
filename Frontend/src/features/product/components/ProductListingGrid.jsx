@@ -67,7 +67,7 @@ const ProductListingGrid = ({
   // Product Grid (Desktop 4 Columns)
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-      {products.map((product) => (
+      {(products || []).map((product) => (
         <HomeProductCard key={product._id || product.id} product={product} />
       ))}
     </div>

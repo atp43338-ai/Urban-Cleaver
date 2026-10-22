@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Image as ImageIcon } from 'lucide-react';
 import { getFullImageUrl } from '@/utils/imageUrl';
+import { useCart } from '@/features/cart/context/CartContext';
 import toast from 'react-hot-toast';
 
 /**
@@ -13,6 +14,7 @@ import toast from 'react-hot-toast';
  * - Full-width compact red "Add to cart" button
  */
 const HomeProductCard = ({ product }) => {
+  const { addToCart, isUpdating } = useCart();
   if (!product) return null;
 
   const id = product._id || product.id;
@@ -26,14 +28,15 @@ const HomeProductCard = ({ product }) => {
       ? getFullImageUrl(product.images[0])
       : null;
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!product.isStock) {
       toast.error('Currently out of stock');
       return;
     }
-    toast.success(`Added ${product.name} to your cart!`);
+    const defaultCut = (Array.isArray(product.cutTypes) && product.cutTypes[0]) || 'Standard Cut';
+    await addToCart({ product, productId: id, cutStyle: defaultCut, quantity: 1 });
   };
 
   return (

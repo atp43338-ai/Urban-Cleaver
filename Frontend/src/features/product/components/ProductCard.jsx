@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, Info, Check, Image as ImageIcon, Scale } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getFullImageUrl } from '../../../utils/imageUrl';
+import { useCart } from '@/features/cart/context/CartContext';
 
 /**
  * ProductCard:
@@ -13,6 +14,7 @@ import { getFullImageUrl } from '../../../utils/imageUrl';
  * - Add to Bag button persisting the chosen cut
  */
 const ProductCard = ({ product, onOpenStandardModal }) => {
+  const { addToCart } = useCart();
   const cuts = Array.isArray(product?.cutTypes) && product.cutTypes.length > 0
     ? product.cutTypes
     : ['Curry Cut', 'Biryani Cut', 'Boneless'];
@@ -26,11 +28,12 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
 
   const productId = product?._id || product?.id;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product?.isStock) return;
-    toast.success(
-      `Added 1x ${product.name} (${selectedCut} • ${product.netWeight || '1000g Net'}) to your bag!`
-    );
+    await addToCart({ product, productId, cutStyle: selectedCut, quantity: 1 });
+
+
+
   };
 
   return (
@@ -147,6 +150,7 @@ const ProductCard = ({ product, onOpenStandardModal }) => {
                   {cut}
                   {isSelected && <Check size={11} className="inline ml-1 stroke-[2.5]" />}
                 </button>
+          
               );
             })}
           </div>

@@ -37,7 +37,7 @@ const CircularCategoryBar = ({
   const [imageErrors, setImageErrors] = useState({});
 
   // Sort canonical categories first, then append any newly added categories
-  const sortedCategories = [...categories].sort((a, b) => {
+  const sortedCategories = [...(categories || [])].sort((a, b) => {
     const aName = (a.name || '').toLowerCase();
     const bName = (b.name || '').toLowerCase();
     const aIdx = ORDERED_CATEGORY_NAMES.findIndex((n) => n.toLowerCase() === aName);

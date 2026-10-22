@@ -39,10 +39,10 @@ const ProductListingFilters = ({
 }) => {
   // Normalize cut tabs from backend cuts or fallback
   const cutTabs =
-    cuts && cuts.length > 0
+    Array.isArray(cuts) && cuts.length > 0
       ? [
           { id: 'all', label: 'All Cuts', sublabel: 'Full Selection' },
-          ...cuts.map((c) => ({
+          ...(cuts || []).map((c) => ({
             id: c.slug || c.name,
             label: c.name,
             sublabel: c.sublabel || 'Culinary Cut',
